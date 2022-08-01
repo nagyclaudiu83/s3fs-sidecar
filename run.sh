@@ -9,6 +9,7 @@ mkdir -p $MOUNTPOINT
 [[ -z "${ALLOWEMPTY}" ]] || FUSE_OPTS="$FUSE_OPTS -o nonempty"
 [[ -z "${ALLOWOTHERS}" ]] || FUSE_OPTS="$FUSE_OPTS -o allow_other"
 [[ -z "${S3URL}" ]] || FUSE_OPTS="$FUSE_OPTS -o url=${S3URL}"
+[[ -z "${S3PATHREQ}" ]] || FUSE_OPTS="$FUSE_OPTS -o use_path_request_style"
 
 echo Mounting $BUCKET  on $MOUNTPOINT with $FUSE_OPTS...
 exec s3fs  $BUCKET $MOUNTPOINT  $FUSE_OPTS -o use_cache=/tmp -f

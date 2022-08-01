@@ -3,14 +3,18 @@ kind: ConfigMap
 metadata:
   name: mountconfig
 data:
-  BUCKET: 'spotfeedgirocount'
-  MOUNTPOINT: '/test'
+  BUCKET: 'media'
+  MOUNTPOINT: '/media'
+  S3URL: 'http://minio.s3-home.svc.cluster.local'
+  S3PATHREQ: 'true'
+  S3UID: '1001'
+  S3GID: '1001'
 
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: two-containers
+  name: s3fs-sidecar-test
 spec:
 
   restartPolicy: Never
@@ -22,7 +26,7 @@ spec:
   containers:
 
   - name: s3sidecar
-    image: signaleleven/s3fs-sidecar
+    image: nagyclaudiu83/s3fs-sidecar:v0.0.3
     imagePullPolicy: Always
     securityContext:
       privileged: true
@@ -33,12 +37,12 @@ spec:
       - name: AWSACCESSKEYID
         valueFrom:
           secretKeyRef:
-            name: awssecret
+            name: s3secret
             key: AWSACCESSKEYID
       - name: AWSSECRETACCESSKEY
         valueFrom:
           secretKeyRef:
-            name: awssecret
+            name: s3secret
             key: AWSSECRETACCESSKEY
       - name: BUCKET
         valueFrom:
@@ -50,17 +54,27 @@ spec:
          configMapKeyRef:
            name: mountconfig
            key: MOUNTPOINT
+      - name: S3URL
+        valueFrom:
+         configMapKeyRef:
+           name: mountconfig
+           key: S3URL
+      - name: S3PATHREQ
+        valueFrom:
+         configMapKeyRef:
+           name: mountconfig
+           key: S3PATHREQ
 
     volumeMounts:
     - name: shared-data
-      mountPath: /test
+      mountPath: /media
       mountPropagation: Bidirectional
 
-  - name: debian-container
-    image: debian
+  - name: ubuntu-container
+    image: ubuntu
     volumeMounts:
     - name: shared-data
-      mountPath: /pod-data
+      mountPath: /media
       mountPropagation: HostToContainer
 
     command: ["/bin/sh"]
